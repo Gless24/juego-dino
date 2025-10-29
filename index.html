@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- 🔒 Evita zoom por gestos/doble-tap -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
   <title>Dinosaurio Chrome V2</title>
 
   <!-- Tus estilos base -->
   <link rel="stylesheet" href="styles.css">
 
-  <!-- Estilos del QUIZ + pantalla completa en LANDSCAPE -->
+  <!-- Estilos del QUIZ + pantalla completa + logos dentro del juego -->
   <style>
     /* ===== Base y pantalla completa ===== */
     html, body { height: 100%; }
@@ -18,11 +20,11 @@
       background: linear-gradient(180deg,#f5d3d8,#f7e1e6);
       overflow:hidden;
       -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
+      touch-action: manipulation;     /* ayuda a evitar doble-tap zoom */
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      overscroll-behavior: none;
     }
 
-    /* Fuerza el juego a ocupar toda la pantalla */
     .contenedor, .stage{
       width: 100vw !important;
       height: 100svh !important;
@@ -32,12 +34,36 @@
       padding: 0 !important;
       box-sizing: border-box;
     }
-
-    /* ✅ Mantener “pies” visibles y estética del canvas */
     .stage{
       border-radius: 18px;
       overflow: hidden;
       position: relative;
+    }
+
+    /* ===== Logos dentro del juego (HUD) ===== */
+    .hud-logos{
+      position: absolute;
+      top: max(8px, env(safe-area-inset-top));
+      left: max(8px, env(safe-area-inset-left));
+      display: flex;
+      flex-direction: column;         /* apilados */
+      gap: 8px;
+      z-index: 5;
+      pointer-events: none;           /* no bloquea los toques */
+      opacity: .9;
+    }
+    .hud-logos img{
+      height: clamp(26px, 10vh, 40px); /* tamaño responsivo */
+      width: auto;
+      background: rgba(255,255,255,.65);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 12px;
+      padding: 4px 8px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.18);
+      filter: saturate(.95);
+    }
+    @media (max-height: 420px){
+      .hud-logos img{ height: clamp(22px, 9vh, 32px); background: rgba(255,255,255,.55); }
     }
 
     /* Botón Retry en overlay centrado */
@@ -102,9 +128,16 @@
     </div>
   </div>
 
-  <!-- Juego (sin logos) a pantalla completa -->
+  <!-- Juego a pantalla completa -->
   <div class="contenedor" id="game">
     <div class="stage">
+      <!-- 👇 Logos dentro de la card -->
+      <div class="hud-logos" aria-hidden="true">
+        <img src="Logo-Ag-14.png" alt="Agencia Digital Chiapas">
+        <img src="logo-sata.png" alt="SATA">
+        <img src="logo-much-nuevo1.png" alt="MUCH">
+      </div>
+
       <div class="suelo"></div>
       <div class="dino dino-corriendo"></div>
       <div class="score">0</div>
@@ -137,5 +170,17 @@
 
   <!-- Tu JS externo -->
   <script src="game.js" defer></script>
+
+  <!-- 🔒 Bloqueos extra de zoom por doble-tap / doble-click -->
+  <script>
+    document.addEventListener('dblclick', e => e.preventDefault(), {passive:false});
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', e => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) e.preventDefault();
+      lastTouchEnd = now;
+    }, {passive:false});
+    document.addEventListener('gesturestart', e => e.preventDefault(), {passive:false});
+  </script>
 </body>
 </html>
