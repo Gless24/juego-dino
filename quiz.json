@@ -1,0 +1,19 @@
+
+{
+  "questions": [
+
+    {
+      "id": "spinosaurus_habitat",
+      "title": "Desafío final",
+      "subtitle": "Pregunta dificil:",
+      "question": "El Spinosaurus habitó principalmente en…",
+      "options": [
+        "Ambientes marinos y fluviales",
+        "Desiertos fríos",
+        "Cimas montañosas",
+        "Islas volcánicas"
+      ],
+      "answerIndex": 0
+    }
+  ]
+}
