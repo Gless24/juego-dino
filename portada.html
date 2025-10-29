@@ -38,6 +38,7 @@
       backdrop-filter: blur(6px);
       position:relative;
       overflow:visible;
+      margin-top:78px; /* 👈 espacio extra para los logos */
     }
 
     /* Estilos base para todos los logos de esquina */
@@ -54,19 +55,19 @@
     /* Tamaño individual de cada logo */
     .logo-izq-abs{ 
       left:19px; 
-      height:52px;  /* 👈 Ajusta solo este */
+      height:52px;
     }
     .logo-der-abs{ 
       right:20px; 
-      height:60px;  /* 👈 Ajusta solo este */
-    background:#f6f6f6;
+      height:60px;
+      background:#f6f6f6;
     }
 
     /* Logo del MUCH dentro del cuadro */
     .logo-much{
       display:block;
       margin:0 auto clamp(16px, 4vw, 24px);
-      height:100px;   /* 👈 Ajusta solo este */
+      height:100px;
       width:auto;
       filter: drop-shadow(0 4px 10px rgba(0,0,0,.25));
     }
@@ -93,11 +94,17 @@
 
     .tip{margin-top:clamp(10px, 3vw, 14px); font-size:clamp(12px, 3.4vw, 14px); opacity:.9}
 
+    /* Ajustes para móviles angostos */
+    @media (max-width:430px){
+      .logo-izq-abs{ top:-58px; height:48px; left:16px; }
+      .logo-der-abs{ top:-58px; height:54px; right:16px; }
+    }
+
     /* Ajuste landscape */
     @media (orientation: landscape) and (max-height: 480px){
-      .card{ padding:16px; border-radius:18px; }
-      .logo-izq-abs{ height:40px; top:-50px; }
-      .logo-der-abs{ height:45px; top:-50px; }
+      .card{ padding:16px; border-radius:18px; margin-top:60px; }
+      .logo-izq-abs{ height:40px; top:-48px; }
+      .logo-der-abs{ height:44px; top:-48px; }
       .btn{ min-width:200px; padding:12px 16px; }
     }
   </style>
@@ -114,8 +121,9 @@
     <h1>SPINOSAURUS RUNNER</h1>
     <p class="sub">Salta los cactus, acumula puntos y ¡reclama tu premio! 🦖</p>
 
-    <a class="btn" href="index.html?start=1">🚀 Jugar ahora</a>
+    <a class="btn" href="index.html?start=1">Jugar ahora 🦖</a>
     <p class="tip">Tip: toca cualquier parte de la pantalla para saltar • evita los cactus</p>
   </main>
 </body>
 </html>
+
