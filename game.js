@@ -1,3 +1,4 @@
+
 /* Redirección a portada si no viene con ?start=1 */
 (function () {
   var qp = new URLSearchParams(location.search);
@@ -24,12 +25,9 @@ function tryLandscapeLock() {
   requestFull().then(lockLandscape).catch(() => {});
 }
 
-var time = new Date(),
-  deltaTime = 0;
-if (
-  document.readyState === "complete" ||
-  document.readyState === "interactive"
-) {
+/* ====== LOOP BASE ====== */
+var time = new Date(), deltaTime = 0;
+if (document.readyState === "complete" || document.readyState === "interactive") {
   setTimeout(Init, 1);
 } else {
   document.addEventListener("DOMContentLoaded", Init);
@@ -47,31 +45,14 @@ function Loop() {
   requestAnimationFrame(Loop);
 }
 
-//****** GAME LOGIC ********//
+/* ===== GAME STATE ===== */
 var sueloY = 24; // altura del "piso" para que se vean las patas
-var velY = 0,
-  impulso = 900,
-  gravedad = 2500;
-var dinoPosX = 42,
-  dinoPosY = sueloY;
-var sueloX = 0,
-  velEscenario = 1280 / 3,
-  gameVel = 1,
-  score = 0;
-var parado = false,
-  saltando = false;
-var tiempoHastaObstaculo = 2,
-  tiempoObstaculoMin = 0.7,
-  tiempoObstaculoMax = 1.8,
-  obstaculoPosY = 16,
-  obstaculos = [];
-var tiempoHastaNube = 0.5,
-  tiempoNubeMin = 0.7,
-  tiempoNubeMax = 2.7,
-  maxNubeY = 270,
-  minNubeY = 100,
-  nubes = [],
-  velNube = 0.5;
+var velY = 0, impulso = 900, gravedad = 2500;
+var dinoPosX = 42, dinoPosY = sueloY;
+var sueloX = 0, velEscenario = 1280 / 3, gameVel = 1, score = 0;
+var parado = false, saltando = false;
+var tiempoHastaObstaculo = 2, tiempoObstaculoMin = 0.7, tiempoObstaculoMax = 1.8, obstaculoPosY = 16, obstaculos = [];
+var tiempoHastaNube = 0.5, tiempoNubeMin = 0.7, tiempoNubeMax = 2.7, maxNubeY = 270, minNubeY = 100, nubes = [], velNube = 0.5;
 
 var contenedor, dino, textoScore, suelo, gameOver;
 var WIN_SCORE = 10;
@@ -83,6 +64,7 @@ var quizAnswerIndex = null;
 var quizVisible = false;
 var navigatingToRegistro = false;
 
+/* ===== START ===== */
 function Start() {
   gameOver = document.querySelector(".game-over");
   suelo = document.querySelector(".suelo");
@@ -95,24 +77,20 @@ function Start() {
   tryLandscapeLock();
 
   document.addEventListener("keydown", HandleKeyDown, { passive: false });
-  contenedor.addEventListener(
-    "click",
-    function (e) {
-      e.preventDefault();
-      tryLandscapeLock();
-      Saltar();
-    },
-    { passive: false }
-  );
-  contenedor.addEventListener(
-    "touchstart",
-    function (e) {
-      e.preventDefault();
-      tryLandscapeLock();
-      Saltar();
-    },
-    { passive: false }
-  );
+
+  // Tap/click para saltar
+  contenedor.addEventListener("click", function (e) {
+    e.preventDefault();
+    tryLandscapeLock();
+    Saltar();
+  }, { passive: false });
+
+  contenedor.addEventListener("touchstart", function (e) {
+    e.preventDefault();
+    tryLandscapeLock();
+    Saltar();
+  }, { passive: false });
+
   window.addEventListener("pointerdown", GlobalTap, { passive: false });
 
   document.getElementById("btnRetry").addEventListener("click", function () {
@@ -120,28 +98,25 @@ function Start() {
   });
 
   document.getElementById("btnQuizOk").addEventListener("click", validarQuiz);
-  document
-    .getElementById("btnQuizCancel")
-    .addEventListener("click", function () {
-      cerrarQuiz();
-    });
+  document.getElementById("btnQuizCancel").addEventListener("click", function () {
+    cerrarQuiz();
+  });
 
   cargarQuizJSON();
 
+  // Anti-cheat básico (si se sale de la página durante el quiz)
   window.addEventListener("blur", antiCheatGuard, { passive: true });
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) antiCheatGuard();
   });
   window.addEventListener("pagehide", antiCheatGuard, { passive: true });
 
-  document.addEventListener("keydown", blockShortcutsDuringQuiz, {
-    capture: true,
-  });
-  document.addEventListener("contextmenu", function (e) {
-    if (quizVisible) e.preventDefault();
-  });
+  // Bloqueo de atajos cuando el quiz está abierto
+  document.addEventListener("keydown", blockShortcutsDuringQuiz, { capture: true });
+  document.addEventListener("contextmenu", function (e) { if (quizVisible) e.preventDefault(); });
 }
 
+/* ===== QUIZ JSON ===== */
 async function cargarQuizJSON() {
   try {
     const res = await fetch("quiz.json?cb=" + Date.now());
@@ -153,6 +128,7 @@ async function cargarQuizJSON() {
   }
 }
 
+/* ===== CONTROLES ===== */
 function GlobalTap(e) {
   if (parado || quizVisible) return;
   var target = e.target;
@@ -164,6 +140,16 @@ function GlobalTap(e) {
   Saltar();
 }
 
+function HandleKeyDown(ev) {
+  if (quizVisible) return;
+  if (ev.code === "Space" || ev.keyCode === 32 || ev.code === "ArrowUp" || ev.keyCode === 38) {
+    ev.preventDefault();
+    tryLandscapeLock();
+    Saltar();
+  }
+}
+
+/* ===== UPDATE ===== */
 function Update() {
   if (parado) return;
   MoverDinosaurio();
@@ -176,20 +162,7 @@ function Update() {
   velY -= gravedad * deltaTime;
 }
 
-function HandleKeyDown(ev) {
-  if (quizVisible) return;
-  if (
-    ev.code === "Space" ||
-    ev.keyCode === 32 ||
-    ev.code === "ArrowUp" ||
-    ev.keyCode === 38
-  ) {
-    ev.preventDefault();
-    tryLandscapeLock();
-    Saltar();
-  }
-}
-
+/* ===== MOVIMIENTO ===== */
 function Saltar() {
   if (dinoPosY === sueloY) {
     saltando = true;
@@ -201,20 +174,15 @@ function Saltar() {
     }
   }
 }
-
 function MoverDinosaurio() {
   dinoPosY += velY * deltaTime;
-  if (dinoPosY < sueloY) {
-    TocarSuelo();
-  }
+  if (dinoPosY < sueloY) TocarSuelo();
   dino.style.bottom = dinoPosY + "px";
 }
 function TocarSuelo() {
   dinoPosY = sueloY;
   velY = 0;
-  if (saltando) {
-    dino.classList.add("dino-corriendo");
-  }
+  if (saltando) dino.classList.add("dino-corriendo");
   saltando = false;
 }
 function MoverSuelo() {
@@ -222,6 +190,7 @@ function MoverSuelo() {
   suelo.style.left = -(sueloX % contenedor.clientWidth) + "px";
 }
 
+/* ===== OBJETOS ===== */
 function Estrellarse() {
   dino.classList.remove("dino-corriendo");
   dino.classList.add("dino-estrellado");
@@ -246,8 +215,7 @@ function CrearObstaculo() {
   o.style.left = o.posX + "px";
   obstaculos.push(o);
   tiempoHastaObstaculo =
-    tiempoObstaculoMin +
-    (Math.random() * (tiempoObstaculoMax - tiempoObstaculoMin)) / gameVel;
+    tiempoObstaculoMin + (Math.random() * (tiempoObstaculoMax - tiempoObstaculoMin)) / gameVel;
 }
 
 function CrearNube() {
@@ -258,8 +226,7 @@ function CrearNube() {
   n.style.left = n.posX + "px";
   n.style.bottom = 100 + Math.random() * (270 - 100) + "px";
   nubes.push(n);
-  tiempoHastaNube =
-    tiempoNubeMin + Math.random() * (tiempoNubeMax - tiempoNubeMin) / gameVel;
+  tiempoHastaNube = tiempoNubeMin + Math.random() * (tiempoNubeMax - tiempoNubeMin) / gameVel;
 }
 
 function MoverObstaculos() {
@@ -274,7 +241,6 @@ function MoverObstaculos() {
     }
   }
 }
-
 function MoverNubes() {
   for (var i = nubes.length - 1; i >= 0; i--) {
     if (nubes[i].posX < -nubes[i].clientWidth) {
@@ -287,6 +253,7 @@ function MoverNubes() {
   }
 }
 
+/* ===== SCORE / QUIZ ===== */
 function GanarPuntos() {
   score++;
   textoScore.innerText = score;
@@ -312,9 +279,7 @@ function GameOver() {
   gameOver.style.display = "grid";
   var wrap = document.getElementById("retryWrap");
   if (wrap) wrap.classList.add("show");
-  try {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  } catch (e) {}
+  try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) {}
 }
 
 function DetectarColision() {
@@ -323,18 +288,15 @@ function DetectarColision() {
     if (IsCollision(dino, obstaculos[i], 10, 30, 15, 20)) GameOver();
   }
 }
-
 function IsCollision(a, b, pt, pr, pb, pl) {
-  var A = a.getBoundingClientRect(),
-    B = b.getBoundingClientRect();
-  return !(
-    A.top + A.height - pb < B.top ||
-    A.top + pt > B.top + B.height ||
-    A.left + A.width - pr < B.left ||
-    A.left + pl > B.left + B.width
-  );
+  var A = a.getBoundingClientRect(), B = b.getBoundingClientRect();
+  return !(A.top + A.height - pb < B.top ||
+           A.top + pt > B.top + B.height ||
+           A.left + A.width - pr < B.left ||
+           A.left + pl > B.left + B.width);
 }
 
+/* ===== QUIZ UI ===== */
 function mostrarQuiz() {
   if (!quizData) {
     quizData = {
@@ -346,11 +308,9 @@ function mostrarQuiz() {
       answerIndex: 3,
     };
   }
-  document.getElementById("quizTitle").textContent =
-    quizData.title || "Pregunta final";
-  document.getElementById("quizSub").textContent = quizData.subtitle || "";
-  document.getElementById("quizQuestion").textContent =
-    quizData.question || "";
+  document.getElementById("quizTitle").textContent = quizData.title || "Pregunta final";
+  document.getElementById("quizSub").textContent   = quizData.subtitle || "";
+  document.getElementById("quizQuestion").textContent = quizData.question || "";
 
   var box = document.getElementById("quizOptions");
   box.innerHTML = "";
@@ -361,13 +321,7 @@ function mostrarQuiz() {
     var label = document.createElement("label");
     label.className = "quiz-opt";
     label.innerHTML =
-      '<input type="radio" name="q1" value="' +
-      i +
-      '" id="' +
-      id +
-      '"> <span>' +
-      txt +
-      "</span>";
+      '<input type="radio" name="q1" value="' + i + '" id="' + id + '"> <span>' + txt + "</span>";
     box.appendChild(label);
   });
 
@@ -378,12 +332,8 @@ function mostrarQuiz() {
   o.classList.add("show");
   quizVisible = true;
 
-  setTimeout(function () {
-    document.getElementById("btnQuizOk").focus();
-  }, 20);
-  try {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  } catch (e) {}
+  setTimeout(function () { document.getElementById("btnQuizOk").focus(); }, 20);
+  try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch (e) {}
 }
 
 function cerrarQuiz() {
@@ -411,31 +361,26 @@ function validarQuiz() {
     quizVisible = false;
     document.getElementById("quizOverlay").classList.remove("show");
 
-    setTimeout(function () {
-      window.location.href = "registro.html";
-    }, 400);
+    setTimeout(function () { window.location.href = "registro.html"; }, 400);
   } else {
     msg.textContent = "Respuesta incorrecta. Intenta de nuevo.";
     msg.className = "quiz-msg err";
   }
 }
 
+/* ===== ANTI-CHEAT ===== */
 function antiCheatGuard() {
   if (navigatingToRegistro) return;
   if (!quizVisible) return;
-  try {
-    document.getElementById("quizOverlay").classList.remove("show");
-  } catch (e) {}
+  try { document.getElementById("quizOverlay").classList.remove("show"); } catch (e) {}
   location.replace("portada.html");
 }
-
 function blockShortcutsDuringQuiz(e) {
   if (!quizVisible) return;
   const k = (e.key || "").toLowerCase();
   const isMod = e.ctrlKey || e.metaKey;
-  if ((isMod && ["l", "t", "n", "w", "k", "p", "r"].includes(k)) || k === "f1") {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
+  if ((isMod && ["l","t","n","w","k","p","r"].includes(k)) || k === "f1") {
+    e.preventDefault(); e.stopPropagation(); return false;
   }
 }
+
